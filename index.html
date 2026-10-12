@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Cronograma Semanal</title>
-<meta name="description" content="Cadastre as disciplinas da semana e gere o PDF do cronograma separado por ENEM, Concursos e Faculdade.">
+<title>Foco Estudos</title>
+<meta name="description" content="Cronograma de estudos simples e minimalista para ENEM, concursos e faculdade, com cronômetro de foco, PDF do cronograma e relatório semanal em PDF.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: uma coluna central. Semana + PDF primeiro, depois abas, cadastro, carga e lista da categoria ativa. */
+/* Layout: uma coluna central. Semana, cronômetro, visão geral, abas, cadastro, andamento e lista da categoria ativa. */
 :root {
   --bg: #e8e8e6;
   --fg: #1f1f1e;
@@ -55,7 +55,6 @@ button { cursor: pointer; }
   background: transparent; border: 1.5px solid var(--fg); border-radius: 6px;
   padding: 10px 16px; min-height: 44px; font-weight: 600; font-size: 15px;
 }
-a.btn { display: inline-flex; align-items: center; text-decoration: none; color: inherit; }
 .btn:hover { background: var(--fg); color: var(--bg); }
 .btn.solid { background: var(--fg); color: var(--bg); }
 .btn.solid:hover { background: transparent; color: var(--fg); }
@@ -66,13 +65,24 @@ a.btn { display: inline-flex; align-items: center; text-decoration: none; color:
 .btn:disabled:hover { background: transparent; color: inherit; }
 .btn.solid:disabled:hover { background: var(--fg); color: var(--bg); }
 
-/* Semana + PDF */
-.week { border: 1.5px solid var(--fg); border-radius: 10px; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
-.week .lab { font-family: var(--font-mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--mute); }
-.week .range { font-family: var(--font-mono); font-weight: 500; font-size: clamp(26px, 8vw, 44px); line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.week .sum { color: var(--mute); font-size: 15px; min-height: 1.5em; overflow-wrap: anywhere; }
-.week .controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-.week .msg { color: var(--mute); font-size: 13px; min-height: 1.2em; margin: 0; }
+/* Semana atual */
+.report { border: 1.5px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 20px; align-items: center; }
+.report h2 { margin: 0 0 6px; }
+.report p { margin: 0 0 10px; color: var(--mute); font-size: 14px; overflow-wrap: anywhere; }
+.report .racts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.report .note { grid-column: 1 / -1; margin: 0; min-height: 1.2em; }
+@media (max-width: 680px) { .report { grid-template-columns: 1fr; } .report .racts { justify-content: flex-start; } }
+
+/* Cronômetro */
+.timer { border: 1.5px solid var(--fg); border-radius: 10px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.mode { font-family: var(--font-mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; display: flex; gap: 8px; }
+.mode span { padding: 4px 12px; border: 1.5px solid var(--line); border-radius: 999px; color: var(--mute); }
+.mode span.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.clock { font-family: var(--font-mono); font-weight: 500; font-size: clamp(64px, 20vw, 120px); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.now { color: var(--mute); font-size: 15px; min-height: 1.5em; overflow-wrap: anywhere; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.bar { width: 100%; height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--fg); }
 
 /* Abas */
 .tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--fg); }
@@ -88,14 +98,13 @@ h2 { font-size: 13px; letter-spacing: .16em; text-transform: uppercase; font-wei
 /* Cadastro */
 .add { display: grid; grid-template-columns: 1fr; gap: 12px; }
 .add .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.add .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--mute); font-weight: 500; }
 input[type="text"], input[type="number"], input[type="time"] {
   background: var(--bg); border: 1.5px solid var(--line); border-radius: 6px; padding: 10px 12px; min-height: 44px; width: 100%; min-width: 0; color: var(--fg);
 }
-input[type="number"], input[type="time"] { font-family: var(--font-mono); }
 input:hover { border-color: var(--mute); }
 input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-color: var(--fg); }
+input[type="number"], input[type="time"] { font-family: var(--font-mono); }
 .dayslab { font-size: 13px; color: var(--mute); font-weight: 500; margin-bottom: 6px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
@@ -104,35 +113,40 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
 }
 .chip:hover { border-color: var(--fg); color: var(--fg); }
 .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip.all { border-style: dashed; }
 .formacts { display: flex; flex-wrap: wrap; gap: 10px; }
 
-/* Carga da semana */
+/* Andamento e visão geral */
+.progress { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 28px; align-items: center; }
+.ring { position: relative; width: 180px; height: 180px; }
+.ring svg { display: block; width: 100%; height: 100%; }
+.ring .c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring b { font-family: var(--font-mono); font-size: 38px; font-weight: 500; line-height: 1; }
+.ring small { color: var(--mute); font-size: 13px; margin-top: 6px; font-family: var(--font-mono); }
+.ring.sm b { font-size: 24px; }
+.ring.sm small { font-size: 12px; margin-top: 4px; }
 .bars { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .bars .l { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; margin-bottom: 5px; }
 .bars .l span:first-child { overflow-wrap: anywhere; font-weight: 500; }
 .bars .l span:last-child { font-family: var(--font-mono); color: var(--mute); white-space: nowrap; }
 .track { height: 16px; border: 1.5px solid var(--fg); border-radius: 3px; overflow: hidden; background: var(--bg); }
 .fill { height: 100%; background: repeating-linear-gradient(45deg, var(--fg) 0 2px, transparent 2px 6px); border-right: 1.5px solid var(--fg); }
-.legend { color: var(--mute); font-size: 13px; margin: 14px 0 0; font-family: var(--font-mono); }
 .fill.full { background: var(--fg); }
-
-/* Visão geral (gráfico em círculo) */
-.progress { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 28px; align-items: center; }
-.ring { position: relative; width: 180px; height: 180px; }
-.ring svg { display: block; width: 100%; height: 100%; }
-.ring .c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.ring b { font-family: var(--font-mono); font-size: 24px; font-weight: 500; line-height: 1; }
-.ring small { color: var(--mute); font-size: 12px; margin-top: 4px; font-family: var(--font-mono); }
+.legend { color: var(--mute); font-size: 13px; margin: 14px 0 0; font-family: var(--font-mono); }
 
 /* Lista */
 .list { list-style: none; margin: 0; padding: 0; border-top: 1.5px solid var(--fg); }
-.item { display: grid; grid-template-columns: minmax(0, 1.8fr) auto minmax(0, auto); gap: 16px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.item { display: grid; grid-template-columns: minmax(0, 1.6fr) auto auto minmax(0, auto); gap: 16px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); }
 .item .nm { font-weight: 600; font-size: 17px; overflow-wrap: anywhere; }
 .item .nm small { display: block; color: var(--mute); font-weight: 400; font-size: 13px; font-family: var(--font-mono); margin-top: 2px; }
-.item.off .nm span { color: var(--mute); }
+.item .nm small.desc { font-family: var(--font-body); }
 .item.done .nm span { text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--mute); }
+.item.off .nm span { color: var(--mute); }
+.tm { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--mute); }
+.tm div { display: flex; align-items: center; gap: 6px; }
+.tm input { width: 72px; padding: 6px 8px; min-height: 40px; }
 .acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-.thead { display: grid; grid-template-columns: minmax(0, 1.8fr) auto minmax(0, auto); gap: 16px; color: var(--mute); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; padding-bottom: 8px; }
+.thead { display: grid; grid-template-columns: minmax(0, 1.6fr) auto auto minmax(0, auto); gap: 16px; color: var(--mute); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; padding-bottom: 8px; }
 .empty { border: 1.5px dashed var(--line); border-radius: 8px; padding: 28px 20px; color: var(--mute); text-align: center; }
 .note { color: var(--mute); font-size: 13px; margin-top: 14px; }
 
@@ -145,51 +159,66 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
 
 @media (max-width: 680px) {
   .thead { display: none; }
-  .item { grid-template-columns: 1fr; gap: 12px; }
-  .acts { justify-content: flex-start; }
+  .item { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .item .nm { grid-column: 1 / -1; }
+  .tm { flex-direction: row; gap: 14px; }
+  .tm div { flex-direction: column; align-items: flex-start; }
+  .acts { grid-column: 1 / -1; justify-content: flex-start; }
   .progress { grid-template-columns: 1fr; justify-items: center; }
   .bars { width: 100%; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .fill { transition: width .4s linear; }
+  .bar i, .fill { transition: width .4s linear; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand">Cronograma / Estudos</div>
+    <div class="brand">Foco / Estudos</div>
     <div class="topr">
-      <nav class="topr" aria-label="Páginas">
-        <a class="btn small quiet" href="https://welihelton.github.io/Cronograma/">Foco Pomodoro</a>
-        <a class="btn small solid" href="cronograma.html" aria-current="page">Cronograma</a>
-      </nav>
-      <button class="btn quiet small" id="theme" type="button" aria-label="Alternar tema claro e escuro">Tema</button>
+      <button class="btn quiet small" id="theme" type="button" aria-label="Alternar tema claro e escuro">Modo escuro</button>
+      <button class="btn solid small" id="b-cron" type="button">PDF do cronograma</button>
+      <button class="btn solid small" id="b-rel" type="button">PDF do relatório</button>
     </div>
   </header>
 
-  <section class="week" aria-label="Semana e PDF">
-    <div class="lab" id="w-lab">Semana</div>
-    <div class="range" id="w-range">--/-- a --/--</div>
-    <div class="sum" id="w-sum"></div>
-    <div class="controls">
-      <button class="btn quiet" id="w-prev" type="button">‹ Semana anterior</button>
-      <button class="btn quiet" id="w-now" type="button">Esta semana</button>
-      <button class="btn quiet" id="w-next" type="button">Próxima semana ›</button>
+  <section class="report" id="report" aria-label="Semana atual">
+    <div>
+      <h2 id="r-title">Semana atual</h2>
+      <p id="r-sub"></p>
+      <div class="bar" aria-hidden="true"><i id="r-bar"></i></div>
     </div>
-    <div class="controls">
-      <button class="btn solid" id="w-pdf" type="button">Gerar PDF da semana</button>
+    <div class="racts">
+      <button class="btn quiet small" id="r-prev" type="button" hidden>Relatório da semana passada</button>
     </div>
-    <p class="msg" id="w-msg" role="status"></p>
+    <p class="note" id="r-msg" role="status"></p>
+  </section>
+
+  <section class="timer" aria-label="Cronômetro">
+    <div class="mode" aria-hidden="true"><span id="m-foco" class="on">Foco</span><span id="m-pausa">Pausa</span></div>
+    <div class="clock" id="clock" role="timer" aria-live="off">25:00</div>
+    <div class="now" id="now">Escolha uma disciplina abaixo ou use o cronômetro livre.</div>
+    <div class="bar" aria-hidden="true"><i id="tbar"></i></div>
+    <div class="controls">
+      <button class="btn solid" id="go" type="button">Iniciar</button>
+      <button class="btn" id="reset" type="button">Reiniciar</button>
+      <button class="btn" id="skip" type="button">Pular fase</button>
+      <button class="btn quiet" id="minus" type="button" aria-label="Menos 5 minutos">−5 min</button>
+      <button class="btn quiet" id="plus" type="button" aria-label="Mais 5 minutos">+5 min</button>
+      <button class="btn quiet" id="testal" type="button">Testar alarme</button>
+      <button class="btn solid" id="stopal" type="button" hidden>Parar alarme</button>
+    </div>
+    <span class="sr" id="status" role="status" aria-live="polite"></span>
   </section>
 
   <section aria-label="Visão geral">
     <h2>Visão geral</h2>
     <div class="progress">
-      <div class="ring" id="oring" role="img" aria-label="Progresso geral"></div>
+      <div class="ring sm" id="oring" role="img" aria-label="Progresso geral"></div>
       <div class="bars" id="obars"></div>
     </div>
-    <p class="legend">Anéis, de fora para dentro: ENEM, Concursos, Faculdade. Percentual de blocos concluídos da meta.</p>
+    <p class="legend">Anéis, de fora para dentro: ENEM, Concursos, Faculdade. Percentual de disciplinas concluídas na semana.</p>
   </section>
 
   <nav class="tabs" role="tablist" aria-label="Categorias">
@@ -214,19 +243,19 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
           </label>
         </div>
         <div>
-          <div class="dayslab" id="days-lab">Dias da semana</div>
+          <div class="dayslab" id="days-lab">Dias da semana (opcional)</div>
           <div class="chips" id="chips" role="group" aria-labelledby="days-lab"></div>
         </div>
-        <div class="row2">
-          <label for="f-start">Início
+        <div class="row">
+          <label for="f-start">Início (opcional)
             <input type="time" id="f-start">
           </label>
-          <label for="f-end">Fim
+          <label for="f-end">Fim (opcional)
             <input type="time" id="f-end">
           </label>
         </div>
-        <label for="f-topic">Assunto / observação (opcional)
-          <input type="text" id="f-topic" maxlength="90" placeholder="Ex.: Genética e herança">
+        <label for="f-desc">Descrição da disciplina (opcional)
+          <input type="text" id="f-desc" maxlength="160" placeholder="Ex.: Genética e herança, capítulos 3 a 5">
         </label>
         <div class="formacts">
           <button class="btn solid" type="submit" id="f-submit">Adicionar</button>
@@ -235,10 +264,13 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
       </form>
     </section>
 
-    <section>
-      <h2 id="load-title">Carga da semana</h2>
-      <div class="bars" id="bars"></div>
-      <p class="legend">Horas por categoria, só das disciplinas marcadas como "Nesta semana".</p>
+    <section id="progress-sec">
+      <h2 id="prog-title">Andamento</h2>
+      <div class="progress">
+        <div class="ring" id="ring" role="img" aria-label="Progresso da categoria"></div>
+        <div class="bars" id="bars"></div>
+      </div>
+      <p class="legend">Anel = disciplinas concluídas. Barras = tempo estudado na semana (sólido = disciplina concluída).</p>
     </section>
 
     <section>
@@ -256,118 +288,93 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function () {
-  /* Mesma chave do Foco (index.html): as disciplinas e conclusões são compartilhadas. */
-  var KEY = 'foco-estudos-v1';
+  var KEY = 'foco-estudos-v2'; /* chave nova: o app começa 100% vazio, sem as disciplinas salvas nas versões anteriores */
+  var THEME_KEY = 'foco-estudos-v1-theme'; /* mantém a preferência de tema que já estava salva */
+  var RESET_HOUR = 0; /* a semana (cronograma e relatório) reinicia todo domingo a partir desta hora (0 = meia-noite) */
   var TABS = { enem: 'ENEM', concursos: 'Concursos', faculdade: 'Faculdade' };
   var CATS = ['enem', 'concursos', 'faculdade'];
   var DAYS_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   var DAYS_FULL = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-  var ORDER = [1, 2, 3, 4, 5, 6, 0]; /* semana começando na segunda */
+  var ORDER = [0, 1, 2, 3, 4, 5, 6]; /* semana de domingo a sábado */
+  var DAY = 86400000;
   var uid = function () { return Math.random().toString(36).slice(2, 9); };
-
-  function emptyState() {
-    return { tab: 'enem', seeded: false, data: { enem: [], concursos: [], faculdade: [] } };
-  }
-  function normState(s) {
-    CATS.forEach(function (c) {
-      if (!Array.isArray(s.data[c])) s.data[c] = [];
-      s.data[c].forEach(function (d) {
-        d.focus = d.focus || 25; d.rest = d.rest || 5; d.goal = d.goal || 10; d.done = d.done || 0;
-        if (!Array.isArray(d.days)) d.days = [];
-        d.start = d.start || ''; d.end = d.end || ''; d.topic = d.topic || '';
-        if (d.on === undefined) d.on = true;
-      });
-    });
-    return s;
-  }
-  function loadState() {
-    var s = null;
-    try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
-    /* Dados de exemplo antigos (nunca editados) são descartados: o app começa vazio. */
-    if (!s || !s.data || s.seeded) s = emptyState();
-    if (!TABS[s.tab]) s.tab = 'enem';
-    return normState(s);
-  }
-  function readRaw() {
-    var f = null;
-    try { f = JSON.parse(localStorage.getItem(KEY)); } catch (e) { f = null; }
-    return (f && typeof f === 'object') ? f : {};
-  }
-  function writeRaw(f) { try { localStorage.setItem(KEY, JSON.stringify(f)); } catch (e) {} }
-  /* Salva só as disciplinas e a aba; o histórico do cronômetro (log) pertence ao Foco e é preservado. */
-  function save() {
-    var f = readRaw();
-    f.data = S.data; f.tab = S.tab; f.seeded = false;
-    if (!f.log) f.log = [];
-    if (!f.cycleStart) f.cycleStart = Date.now();
-    writeRaw(f);
-  }
-  /* Concluir aqui também aparece no relatório do Foco, como lá. */
-  function logDone(tab, name) {
-    var f = readRaw();
-    if (!f.log) f.log = [];
-    f.log.push({ k: 'c', t: Date.now(), tab: tab, name: name });
-    writeRaw(f);
-  }
-
-  var S = loadState();
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function clamp(v, a, b, d) { v = parseInt(v, 10); if (isNaN(v)) return d; return Math.min(b, Math.max(a, v)); }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function hm(min) { var h = Math.floor(min / 60), m = Math.round(min % 60); return h ? h + 'h' + (m ? ' ' + pad(m) + 'min' : '') : m + 'min'; }
+  function mmss(sec) { var m = Math.floor(sec / 60), s = sec % 60; return pad(m) + ':' + pad(s); }
   function toMin(t) { if (!t) return null; var p = t.split(':'); return parseInt(p[0], 10) * 60 + parseInt(p[1], 10); }
   function fmtD(ts) { var d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); }
   function fmtS(ts) { var d = new Date(ts); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1); }
   function ymd(ts) { var d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function addDays(ts, n) { var d = new Date(ts); d.setDate(d.getDate() + n); return d.getTime(); }
-  function mondayOf(ts) { var d = new Date(ts); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); }
+  /* Início da semana que contém ts: o domingo mais recente às RESET_HOUR */
+  function weekStartOf(ts) {
+    var d = new Date(ts - RESET_HOUR * 3600000);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(RESET_HOUR, 0, 0, 0);
+    return d.getTime();
+  }
   function sortedDays(days) { return ORDER.filter(function (d) { return days.indexOf(d) >= 0; }); }
-  function daysTxt(days) { var s = sortedDays(days); return s.length ? s.map(function (d) { return DAYS_SHORT[d]; }).join(', ') : 'sem dia definido'; }
-  function timeTxt(d) { return d.start && d.end ? d.start + ' às ' + d.end : (d.start || 'sem horário'); }
+  function daysTxt(days) {
+    var s = sortedDays(days);
+    if (s.length === 7) return 'Semana toda';
+    return s.map(function (d) { return DAYS_SHORT[d]; }).join(', ');
+  }
+  function timeTxt(d) { return d.start && d.end ? d.start + ' às ' + d.end : (d.start || ''); }
   function weekMin(d) {
     var a = toMin(d.start), b = toMin(d.end);
     if (a === null || b === null || b <= a) return 0;
     return (b - a) * d.days.length;
   }
 
-  var WS = mondayOf(Date.now());
-
-  /* Progresso (blocos concluídos / meta), geral e por categoria */
-  function stats(onlyActive) {
-    var cats = {}, g = 0, dn = 0;
+  /* ---------- Dados (salvos no navegador) ---------- */
+  function emptyState() {
+    return { tab: 'enem', seeded: false, data: { enem: [], concursos: [], faculdade: [] }, log: [], weekStart: 0, prev: null };
+  }
+  function normState(s) {
     CATS.forEach(function (c) {
-      var gs = 0, ds = 0, n = 0;
-      S.data[c].forEach(function (x) {
-        if (onlyActive && !x.on) return;
-        n++; gs += x.goal; ds += Math.min(x.done, x.goal);
+      if (!Array.isArray(s.data[c])) s.data[c] = [];
+      s.data[c].forEach(function (d) {
+        d.focus = d.focus || 25; d.rest = d.rest || 5;
+        /* "concluída" agora é um simples marcador; a antiga meta de 10 blocos foi removida */
+        if (d.fin === undefined) d.fin = !!(d.goal && d.done >= d.goal);
+        if (!Array.isArray(d.days)) d.days = [];
+        d.start = d.start || ''; d.end = d.end || '';
+        if (d.desc === undefined) d.desc = d.topic || '';
+        if (d.on === undefined) d.on = true;
       });
-      cats[c] = { n: n, pct: gs ? Math.round(100 * ds / gs) : 0 };
-      g += gs; dn += ds;
     });
-    return { pct: g ? Math.round(100 * dn / g) : 0, cats: cats };
+    return s;
   }
-  function drawOverall() {
-    var st = stats(false), RAD = [78, 60, 42], SW = 12, out = '', aria = [];
-    out += '<svg viewBox="0 0 180 180" aria-hidden="true"><defs><pattern id="hatch2" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="none"/><rect width="2" height="6" fill="currentColor"/></pattern></defs>';
-    CATS.forEach(function (c, i) {
-      var r = RAD[i], C = 2 * Math.PI * r, p = st.cats[c].pct;
-      out += '<circle cx="90" cy="90" r="' + r + '" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="' + SW + '"/>' +
-        '<circle cx="90" cy="90" r="' + r + '" fill="none" stroke="url(#hatch2)" stroke-width="' + SW + '" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + (C * (1 - p / 100)).toFixed(2) + '" transform="rotate(-90 90 90)"/>';
-      aria.push(TABS[c] + ' ' + p + '%');
-    });
-    out += '</svg><div class="c"><b>' + st.pct + '%</b><small>geral</small></div>';
-    $('oring').innerHTML = out;
-    $('oring').setAttribute('aria-label', 'Progresso geral ' + st.pct + ' por cento. ' + aria.join(', '));
-    var bars = '';
-    CATS.forEach(function (c) {
-      var x = st.cats[c];
-      bars += '<div><div class="l"><span>' + TABS[c] + '</span><span>' + x.pct + '% · ' + x.n + (x.n === 1 ? ' disciplina' : ' disciplinas') + '</span></div>' +
-        '<div class="track" role="img" aria-label="' + TABS[c] + ': ' + x.pct + ' por cento"><div class="fill' + (x.pct >= 100 ? ' full' : '') + '" style="width:' + x.pct + '%"></div></div></div>';
-    });
-    $('obars').innerHTML = bars;
+  /* Todo domingo: o relatório da semana vai para "semana passada" e o progresso do cronograma zera. */
+  function rollWeek(s) {
+    var cur = weekStartOf(Date.now());
+    if (s.weekStart >= cur) return false;
+    s.prev = { start: s.weekStart, log: s.log };
+    s.log = [];
+    CATS.forEach(function (c) { s.data[c].forEach(function (d) { d.fin = false; }); });
+    s.weekStart = cur;
+    return true;
   }
+  function loadState() {
+    var s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY)); } catch (e) { s = null; }
+    /* Dados de exemplo antigos (nunca editados) são descartados: o app começa vazio. */
+    if (!s || !s.data || s.seeded) s = emptyState();
+    if (!Array.isArray(s.log)) s.log = [];
+    if (!TABS[s.tab]) s.tab = 'enem';
+    if (!s.weekStart) s.weekStart = weekStartOf(s.cycleStart || Date.now());
+    normState(s);
+    rollWeek(s);
+    return s;
+  }
+  var S = loadState();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  save();
 
   /* ---------- Tema ---------- */
   var root = document.documentElement;
@@ -376,14 +383,152 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
     if (t) return t === 'dark';
     return window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
   }
-  try { var th = localStorage.getItem(KEY + '-theme'); if (th) root.setAttribute('data-theme', th); } catch (e) {}
+  try { var th = localStorage.getItem(THEME_KEY); if (th) root.setAttribute('data-theme', th); } catch (e) {}
   $('theme').textContent = isDark() ? 'Modo claro' : 'Modo escuro';
   $('theme').addEventListener('click', function () {
     var next = isDark() ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
-    try { localStorage.setItem(KEY + '-theme', next); } catch (e) {}
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
     $('theme').textContent = next === 'dark' ? 'Modo claro' : 'Modo escuro';
   });
+
+  /* ---------- Cronômetro ---------- */
+  var T = { mode: 'foco', remaining: 25 * 60, total: 25 * 60, running: false, endAt: 0, tab: null, id: null, focus: 25, rest: 5 };
+  var iv = null, audio = null;
+
+  function curDisc() {
+    if (!T.id) return null;
+    var l = S.data[T.tab] || [];
+    for (var i = 0; i < l.length; i++) if (l[i].id === T.id) return l[i];
+    return null;
+  }
+  /* ---------- Alarme (som gerado no próprio navegador, sem arquivo de áudio) ---------- */
+  var alarmNodes = [], alarmTimer = null;
+  function getAudio() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      audio = audio || new AC();
+      if (audio.state === 'suspended' && audio.resume) audio.resume();
+      return audio;
+    } catch (e) { return null; }
+  }
+  function tone(freq, start, dur, vol) {
+    var ctx = getAudio();
+    if (!ctx) return;
+    var o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime + start;
+    o.type = 'triangle'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t0); o.stop(t0 + dur + 0.05);
+    alarmNodes.push(o);
+  }
+  function stopAlarm() {
+    clearTimeout(alarmTimer);
+    alarmNodes.forEach(function (o) { try { o.stop(); } catch (e) {} });
+    alarmNodes = [];
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
+    $('stopal').hidden = true;
+  }
+  /* long = fim do bloco de estudo (4 repetições, ~6 s); curto = fim da pausa (1 repetição) */
+  function playAlarm(long) {
+    stopAlarm();
+    if (!getAudio()) return;
+    var rounds = long ? 4 : 1, r;
+    for (r = 0; r < rounds; r++) {
+      var b = r * 1.5;
+      tone(880, b, 0.2, 0.35); tone(880, b + 0.3, 0.2, 0.35); tone(1175, b + 0.6, 0.4, 0.35);
+    }
+    try { if (long && navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 500]); } catch (e) {}
+    $('stopal').hidden = false;
+    alarmTimer = setTimeout(stopAlarm, rounds * 1500 + 500);
+  }
+  function say(t) { $('status').textContent = t; }
+
+  function drawTimer() {
+    $('clock').textContent = mmss(T.remaining);
+    $('m-foco').className = T.mode === 'foco' ? 'on' : '';
+    $('m-pausa').className = T.mode === 'pausa' ? 'on' : '';
+    $('go').textContent = T.running ? 'Pausar' : (T.remaining < T.total ? 'Continuar' : 'Iniciar');
+    var d = curDisc();
+    $('now').textContent = d ? d.name + ' — ' + TABS[T.tab] : 'Cronômetro livre (sem disciplina)';
+    $('tbar').style.width = (T.total ? (100 * (T.total - T.remaining) / T.total) : 0) + '%';
+    var idle = !T.running && T.remaining === T.total;
+    $('minus').disabled = $('plus').disabled = !idle;
+    $('minus').style.opacity = $('plus').style.opacity = idle ? 1 : .4;
+  }
+  function setPhase(mode, autostart) {
+    T.mode = mode;
+    var min = mode === 'foco' ? T.focus : T.rest;
+    T.total = T.remaining = min * 60;
+    T.running = false;
+    clearInterval(iv);
+    if (autostart) run();
+    drawTimer();
+  }
+  function run() {
+    getAudio(); /* libera o áudio no clique do usuário, para o alarme poder tocar depois */
+    T.running = true;
+    T.endAt = Date.now() + T.remaining * 1000;
+    clearInterval(iv);
+    iv = setInterval(tick, 250);
+  }
+  function pause() { T.running = false; clearInterval(iv); }
+  function tick() {
+    if (!T.running) return;
+    var r = Math.max(0, Math.ceil((T.endAt - Date.now()) / 1000));
+    if (r !== T.remaining) {
+      T.remaining = r;
+      drawTimer();
+      document.title = (T.running ? mmss(r) + ' · ' : '') + 'Foco Estudos';
+    }
+    if (r <= 0) finish();
+  }
+  function finish() {
+    playAlarm(T.mode === 'foco');
+    if (T.mode === 'foco') {
+      checkWeek(true);
+      var d = curDisc();
+      S.log.push({ k: 'b', t: Date.now(), tab: d ? T.tab : 'livre', name: d ? d.name : 'Sem disciplina', min: T.focus });
+      save(); render();
+      say('Bloco concluído. Hora da pausa.');
+      setPhase('pausa', true);
+    } else {
+      say('Pausa terminada. Pronto para o próximo bloco.');
+      setPhase('foco', false);
+    }
+    document.title = 'Foco Estudos';
+  }
+  function startDisc(tab, id) {
+    var l = S.data[tab], d = null;
+    for (var i = 0; i < l.length; i++) if (l[i].id === id) d = l[i];
+    if (!d) return;
+    T.tab = tab; T.id = id; T.focus = d.focus; T.rest = d.rest;
+    setPhase('foco', true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    say('Iniciado: ' + d.name);
+  }
+
+  $('go').addEventListener('click', function () {
+    stopAlarm();
+    if (T.running) { pause(); document.title = 'Foco Estudos'; drawTimer(); }
+    else { run(); drawTimer(); }
+  });
+  $('reset').addEventListener('click', function () { stopAlarm(); setPhase(T.mode, false); document.title = 'Foco Estudos'; });
+  $('skip').addEventListener('click', function () { stopAlarm(); setPhase(T.mode === 'foco' ? 'pausa' : 'foco', false); });
+  $('stopal').addEventListener('click', stopAlarm);
+  $('testal').addEventListener('click', function () { playAlarm(false); });
+  function adjust(delta) {
+    if (T.running || T.remaining !== T.total) return;
+    var m = Math.min(180, Math.max(1, T.total / 60 + delta));
+    T.total = T.remaining = m * 60;
+    if (T.mode === 'foco') T.focus = m; else T.rest = m;
+    drawTimer();
+  }
+  $('minus').addEventListener('click', function () { adjust(-5); });
+  $('plus').addEventListener('click', function () { adjust(5); });
 
   /* ---------- Abas ---------- */
   var tabBtns = document.querySelectorAll('.tab');
@@ -410,26 +555,40 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
     });
   }
 
-  /* ---------- Dias (chips) ---------- */
+  /* ---------- Dias da semana (chips + "Semana toda") ---------- */
   var selDays = [], editId = null;
   function drawChips() {
     var h = '';
     ORDER.forEach(function (d) {
       h += '<button type="button" class="chip" data-d="' + d + '" aria-pressed="' + (selDays.indexOf(d) >= 0) + '" aria-label="' + DAYS_FULL[d] + '">' + DAYS_SHORT[d] + '</button>';
     });
+    h += '<button type="button" class="chip all" data-d="all" aria-pressed="' + (selDays.length === 7) + '" aria-label="Marcar ou desmarcar a semana toda">Semana toda</button>';
     $('chips').innerHTML = h;
+  }
+  function syncChips() {
+    var bs = $('chips').querySelectorAll('button[data-d]');
+    for (var k = 0; k < bs.length; k++) {
+      var v = bs[k].getAttribute('data-d');
+      var on = v === 'all' ? selDays.length === 7 : selDays.indexOf(parseInt(v, 10)) >= 0;
+      bs[k].setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
   }
   $('chips').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-d]');
     if (!b) return;
-    var d = parseInt(b.getAttribute('data-d'), 10), i = selDays.indexOf(d);
-    if (i >= 0) selDays.splice(i, 1); else selDays.push(d);
-    b.setAttribute('aria-pressed', i < 0 ? 'true' : 'false');
+    var v = b.getAttribute('data-d');
+    if (v === 'all') {
+      selDays = selDays.length === 7 ? [] : ORDER.slice();
+    } else {
+      var d = parseInt(v, 10), i = selDays.indexOf(d);
+      if (i >= 0) selDays.splice(i, 1); else selDays.push(d);
+    }
+    syncChips();
   });
 
   /* ---------- Cadastro / edição ---------- */
   function resetForm() {
-    $('f-name').value = ''; $('f-topic').value = '';
+    $('f-name').value = ''; $('f-desc').value = '';
     $('f-start').value = ''; $('f-end').value = '';
     $('f-focus').value = 25; $('f-break').value = 5;
     selDays = []; drawChips();
@@ -453,18 +612,19 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
       rest: clamp($('f-break').value, 1, 60, 5),
       days: sortedDays(selDays),
       start: $('f-start').value, end: $('f-end').value,
-      topic: $('f-topic').value.trim()
+      desc: $('f-desc').value.trim()
     };
     var list = S.data[S.tab];
     if (editId) {
       var d = list.find(function (x) { return x.id === editId; });
       if (d) {
         d.name = rec.name; d.focus = rec.focus; d.rest = rec.rest;
-        d.days = rec.days; d.start = rec.start; d.end = rec.end; d.topic = rec.topic;
+        d.days = rec.days; d.start = rec.start; d.end = rec.end; d.desc = rec.desc;
+        if (T.id === d.id && !T.running && T.remaining === T.total) { T.focus = d.focus; T.rest = d.rest; setPhase(T.mode, false); }
       }
       cancelEdit();
     } else {
-      rec.id = uid(); rec.done = 0; rec.goal = 10; rec.on = true;
+      rec.id = uid(); rec.fin = false; rec.on = true;
       list.push(rec);
       resetForm();
     }
@@ -472,25 +632,73 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
     $('f-name').focus();
   });
 
-  /* ---------- Lista e carga ---------- */
+  /* ---------- Progresso: geral e por categoria ---------- */
+  function stats(onlyActive) {
+    var cats = {}, g = 0, dn = 0;
+    CATS.forEach(function (c) {
+      var k = 0, n = 0;
+      S.data[c].forEach(function (x) {
+        if (onlyActive && !x.on) return;
+        n++; if (x.fin) k++;
+      });
+      cats[c] = { n: n, pct: n ? Math.round(100 * k / n) : 0 };
+      g += n; dn += k;
+    });
+    return { pct: g ? Math.round(100 * dn / g) : 0, cats: cats };
+  }
+  /* Tempo realmente estudado na semana (soma dos blocos de foco concluídos no cronômetro) */
+  function studiedMin(tab, name) {
+    var m = 0;
+    S.log.forEach(function (e) { if (e.k === 'b' && e.tab === tab && e.name === name) m += e.min; });
+    return m;
+  }
+  function drawOverall() {
+    var st = stats(false), RAD = [78, 60, 42], SW = 12, out = '', aria = [];
+    out += '<svg viewBox="0 0 180 180" aria-hidden="true"><defs><pattern id="hatch2" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="none"/><rect width="2" height="6" fill="currentColor"/></pattern></defs>';
+    CATS.forEach(function (c, i) {
+      var r = RAD[i], C = 2 * Math.PI * r, p = st.cats[c].pct;
+      out += '<circle cx="90" cy="90" r="' + r + '" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="' + SW + '"/>' +
+        '<circle cx="90" cy="90" r="' + r + '" fill="none" stroke="url(#hatch2)" stroke-width="' + SW + '" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + (C * (1 - p / 100)).toFixed(2) + '" transform="rotate(-90 90 90)"/>';
+      aria.push(TABS[c] + ' ' + p + '%');
+    });
+    out += '</svg><div class="c"><b>' + st.pct + '%</b><small>geral</small></div>';
+    $('oring').innerHTML = out;
+    $('oring').setAttribute('aria-label', 'Progresso geral ' + st.pct + ' por cento. ' + aria.join(', '));
+    var bars = '';
+    CATS.forEach(function (c) {
+      var x = st.cats[c];
+      bars += '<div><div class="l"><span>' + TABS[c] + '</span><span>' + x.pct + '% · ' + x.n + (x.n === 1 ? ' disciplina' : ' disciplinas') + '</span></div>' +
+        '<div class="track" role="img" aria-label="' + TABS[c] + ': ' + x.pct + ' por cento"><div class="fill' + (x.pct >= 100 ? ' full' : '') + '" style="width:' + x.pct + '%"></div></div></div>';
+    });
+    $('obars').innerHTML = bars;
+  }
+
   function render() {
     var list = S.data[S.tab], html = '';
+    $('prog-title').textContent = 'Andamento — ' + TABS[S.tab];
     $('list-title').textContent = 'Disciplinas — ' + TABS[S.tab];
 
     if (!list.length) {
       html = '<div class="empty">Nenhuma disciplina em ' + esc(TABS[S.tab]) + ' ainda. Adicione a primeira acima.</div>';
     } else {
-      html += '<div class="thead" aria-hidden="true"><span>Disciplina</span><span>Semana</span><span style="text-align:right">Ação</span></div>';
+      html += '<div class="thead" aria-hidden="true"><span>Disciplina</span><span>Estudo</span><span>Pausa</span><span style="text-align:right">Ação</span></div>';
       html += '<ul class="list">';
       list.forEach(function (d) {
-        var isDone = d.done >= d.goal;
-        html += '<li class="item' + (d.on ? '' : ' off') + (isDone ? ' done' : '') + '" data-id="' + d.id + '">' +
+        var isDone = !!d.fin;
+        var sm = studiedMin(S.tab, d.name);
+        var status = [sm ? hm(sm) + ' estudados na semana' : '', isDone ? 'concluída' : ''].filter(Boolean).join(' · ');
+        var sched = [daysTxt(d.days), timeTxt(d)].filter(Boolean).join(' · ');
+        html += '<li class="item' + (isDone ? ' done' : '') + (d.on ? '' : ' off') + '" data-id="' + d.id + '">' +
           '<div class="nm"><span>' + esc(d.name) + '</span>' +
-            '<small>' + d.done + ' / ' + d.goal + ' blocos' + (isDone ? ' · concluída' : '') + '</small>' +
-            '<small>' + esc(daysTxt(d.days)) + ' · ' + esc(timeTxt(d)) + (d.topic ? ' · ' + esc(d.topic) : '') + '</small></div>' +
-          '<div><button class="btn small' + (d.on ? ' solid' : '') + '" type="button" data-a="on" aria-pressed="' + d.on + '">' + (d.on ? 'Nesta semana' : 'Fora da semana') + '</button></div>' +
+            (status ? '<small>' + esc(status) + '</small>' : '') +
+            (sched ? '<small>' + esc(sched) + '</small>' : '') +
+            (d.desc ? '<small class="desc">' + esc(d.desc) + '</small>' : '') + '</div>' +
+          '<div class="tm"><div><label class="sr" for="fo-' + d.id + '">Minutos de estudo de ' + esc(d.name) + '</label><span aria-hidden="true">Estudo</span><span><input type="number" id="fo-' + d.id + '" data-k="focus" min="1" max="180" value="' + d.focus + '" inputmode="numeric"> min</span></div></div>' +
+          '<div class="tm"><div><label class="sr" for="re-' + d.id + '">Minutos de pausa de ' + esc(d.name) + '</label><span aria-hidden="true">Pausa</span><span><input type="number" id="re-' + d.id + '" data-k="rest" min="1" max="60" value="' + d.rest + '" inputmode="numeric"> min</span></div></div>' +
           '<div class="acts">' +
+            '<button class="btn solid small" type="button" data-a="start">Iniciar</button>' +
             '<button class="btn small" type="button" data-a="done" aria-pressed="' + isDone + '">' + (isDone ? 'Reabrir' : 'Concluir') + '</button>' +
+            '<button class="btn quiet small" type="button" data-a="on" aria-pressed="' + d.on + '" title="Define se entra no PDF do cronograma desta semana">' + (d.on ? 'Nesta semana' : 'Fora da semana') + '</button>' +
             '<button class="btn quiet small" type="button" data-a="edit" aria-label="Editar ' + esc(d.name) + '">Editar</button>' +
             '<button class="btn quiet small" type="button" data-a="del" aria-label="Excluir ' + esc(d.name) + '">Excluir</button>' +
           '</div></li>';
@@ -499,20 +707,32 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
     }
     $('list').innerHTML = html;
 
-    var tot = 0, per = {}, cnt = {};
-    CATS.forEach(function (c) {
-      per[c] = 0; cnt[c] = 0;
-      S.data[c].forEach(function (d) { if (d.on) { per[c] += weekMin(d); cnt[c]++; } });
-      tot += per[c];
-    });
+    // Andamento da categoria
+    var finSum = 0, minSum = 0, maxMin = 0;
+    list.forEach(function (d) { if (d.fin) finSum++; var m = studiedMin(S.tab, d.name); minSum += m; if (m > maxMin) maxMin = m; });
+    var pct = list.length ? Math.round(100 * finSum / list.length) : 0;
+    var R = 76, C = 2 * Math.PI * R, off = C * (1 - pct / 100);
+    $('ring').innerHTML =
+      '<svg viewBox="0 0 180 180" aria-hidden="true">' +
+        '<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="none"/><rect width="2" height="6" fill="currentColor"/></pattern></defs>' +
+        '<circle cx="90" cy="90" r="' + R + '" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="18"/>' +
+        '<circle cx="90" cy="90" r="' + R + '" fill="none" stroke="url(#hatch)" stroke-width="18" stroke-dasharray="' + C.toFixed(2) + '" stroke-dashoffset="' + off.toFixed(2) + '" transform="rotate(-90 90 90)"/>' +
+        '<circle cx="90" cy="90" r="' + (R + 9) + '" fill="none" stroke="currentColor" stroke-width="1.5"/>' +
+        '<circle cx="90" cy="90" r="' + (R - 9) + '" fill="none" stroke="currentColor" stroke-width="1.5"/>' +
+      '</svg>' +
+      '<div class="c"><b>' + pct + '%</b><small>' + hm(minSum) + '</small></div>';
+    $('ring').setAttribute('aria-label', TABS[S.tab] + ': ' + pct + ' por cento das disciplinas concluídas, ' + hm(minSum) + ' estudadas');
+
+    /* Barras: tempo estudado na semana em cada disciplina (a maior preenche a barra) */
     var bars = '';
-    CATS.forEach(function (c) {
-      var p = tot ? Math.round(100 * per[c] / tot) : 0;
-      bars += '<div><div class="l"><span>' + TABS[c] + ' · ' + cnt[c] + (cnt[c] === 1 ? ' disciplina' : ' disciplinas') + '</span><span>' + hm(per[c]) + '</span></div>' +
-        '<div class="track" role="img" aria-label="' + TABS[c] + ': ' + hm(per[c]) + '"><div class="fill" style="width:' + p + '%"></div></div></div>';
+    list.forEach(function (d) {
+      var m = studiedMin(S.tab, d.name), w = maxMin ? Math.round(100 * m / maxMin) : 0;
+      bars += '<div><div class="l"><span>' + esc(d.name) + '</span><span>' + hm(m) + (d.fin ? ' · concluída' : '') + '</span></div>' +
+        '<div class="track" role="img" aria-label="' + esc(d.name) + ': ' + hm(m) + ' estudados"><div class="fill' + (d.fin ? ' full' : '') + '" style="width:' + w + '%"></div></div></div>';
     });
-    $('bars').innerHTML = bars;
+    $('bars').innerHTML = bars || '<span style="color:var(--mute)">Sem dados ainda.</span>';
     drawOverall();
+    drawTimer();
     drawWeek();
   }
 
@@ -523,21 +743,14 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
     var idx = list.findIndex(function (x) { return x.id === id; });
     if (idx < 0) return;
     var a = b.getAttribute('data-a'), d = list[idx];
+    if (a === 'start') { startDisc(S.tab, id); return; }
     if (a === 'on') { d.on = !d.on; }
-    if (a === 'done') {
-      if (d.done >= d.goal) d.done = 0;
-      else { d.done = d.goal; logDone(S.tab, d.name); }
-    }
-    if (a === 'del') {
-      if (editId === id) cancelEdit();
-      list.splice(idx, 1);
-    }
     if (a === 'edit') {
       editId = id;
       $('form-title').textContent = 'Editar disciplina';
       $('f-submit').textContent = 'Salvar alterações';
       $('f-cancel').hidden = false;
-      $('f-name').value = d.name; $('f-topic').value = d.topic || '';
+      $('f-name').value = d.name; $('f-desc').value = d.desc || '';
       $('f-start').value = d.start || ''; $('f-end').value = d.end || '';
       $('f-focus').value = d.focus; $('f-break').value = d.rest;
       selDays = d.days.slice(); drawChips();
@@ -545,33 +758,75 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
       $('f-name').focus();
       return;
     }
+    if (a === 'done') {
+      if (d.fin) d.fin = false;
+      else { d.fin = true; S.log.push({ k: 'c', t: Date.now(), tab: S.tab, name: d.name }); }
+    }
+    if (a === 'del') {
+      if (T.id === id) { pause(); T.id = null; setPhase('foco', false); }
+      if (editId === id) cancelEdit();
+      list.splice(idx, 1);
+    }
+    save(); render();
+  });
+  $('list').addEventListener('change', function (e) {
+    var inp = e.target;
+    if (!inp.matches || !inp.matches('input[data-k]')) return;
+    var id = inp.closest('.item').getAttribute('data-id'), k = inp.getAttribute('data-k');
+    var d = S.data[S.tab].find(function (x) { return x.id === id; });
+    if (!d) return;
+    d[k] = clamp(inp.value, 1, k === 'focus' ? 180 : 60, d[k]);
     save(); render();
   });
 
-  /* ---------- Semana ---------- */
+  /* ---------- Semana atual ---------- */
   function activeItems() {
     var out = [];
     CATS.forEach(function (c) { S.data[c].forEach(function (d) { if (d.on) out.push({ cat: c, d: d }); }); });
     return out;
   }
+  function rmsg(t) { $('r-msg').textContent = t; }
   function drawWeek() {
-    var isNow = WS === mondayOf(Date.now());
-    $('w-lab').textContent = isNow ? 'Esta semana' : 'Semana selecionada';
-    $('w-range').textContent = fmtS(WS) + ' a ' + fmtS(addDays(WS, 6));
-    var act = activeItems(), m = 0;
-    act.forEach(function (x) { m += weekMin(x.d); });
-    $('w-sum').textContent = act.length
-      ? act.length + (act.length === 1 ? ' disciplina' : ' disciplinas') + ' na semana · ' + hm(m) + ' de estudo planejado.'
-      : 'Nenhuma disciplina marcada. Cadastre uma disciplina e deixe "Nesta semana" ligado.';
-    $('w-now').disabled = isNow;
+    var now = Date.now(), ws = S.weekStart, we = addDays(ws, 7), b = 0, m = 0, planned = 0;
+    S.log.forEach(function (e) { if (e.k === 'b') { b++; m += e.min; } });
+    activeItems().forEach(function (x) { planned += weekMin(x.d); });
+    $('r-title').textContent = 'Semana de ' + fmtS(ws) + ' a ' + fmtS(addDays(ws, 6));
+    $('r-sub').textContent = 'Estudado: ' + hm(m) +
+      (planned ? ' · Planejado no cronograma: ' + hm(planned) : '') +
+      '. Reinicia no domingo (' + fmtD(we) + ').';
+    $('r-bar').style.width = Math.min(100, Math.max(0, 100 * (now - ws) / (7 * DAY))) + '%';
+    $('r-prev').hidden = !(S.prev && S.prev.log && S.prev.log.length);
   }
-  function wmsg(t) { $('w-msg').textContent = t; }
-  $('w-prev').addEventListener('click', function () { WS = addDays(WS, -7); drawWeek(); wmsg(''); });
-  $('w-next').addEventListener('click', function () { WS = addDays(WS, 7); drawWeek(); wmsg(''); });
-  $('w-now').addEventListener('click', function () { WS = mondayOf(Date.now()); drawWeek(); wmsg(''); });
 
-  /* ---------- PDF ---------- */
-  function buildPdf(JsPDF, ws) {
+  /* Reinício automático de domingo (também ao voltar para a aba) */
+  function checkWeek(silent) {
+    if (rollWeek(S)) {
+      save();
+      if (!silent) { render(); rmsg('Nova semana começou. O relatório da semana anterior ficou disponível no botão ao lado.'); }
+      return true;
+    }
+    return false;
+  }
+  function reloadState() { S = loadState(); save(); drawTabs(); render(); }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) return;
+    if (T.running) tick();
+    reloadState();
+  });
+  window.addEventListener('pageshow', function (e) { if (e.persisted) reloadState(); });
+  setInterval(function () { checkWeek(false); drawWeek(); }, 60000);
+
+  /* ---------- PDFs ---------- */
+  function download(buf, filename) {
+    var url = URL.createObjectURL(new Blob([buf], { type: 'application/pdf' }));
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  /* PDF do cronograma: disciplinas marcadas "Nesta semana", por categoria, com agenda dia a dia */
+  function buildCronPdf(JsPDF, ws) {
     var doc = new JsPDF({ unit: 'mm', format: 'a4' });
     var M = 18, W = 210, PH = 297, y = M, R = W - M;
     var act = activeItems();
@@ -600,8 +855,49 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
     });
     y += 34;
 
+    /* Progresso geral (gráfico em círculo) */
+    var st = stats(true);
+    ensure(62);
+    doc.setTextColor(0);
+    txt('PROGRESSO GERAL', M, 11, true); y += 3; rule(0.8); y += 7;
+    var dcx = M + 24, dcy = y + 24, radii = [21, 15.5, 10], greys = [0, 70, 130], sw = 3.4;
+    doc.setLineCap('butt');
+    CATS.forEach(function (c, i) {
+      var r = radii[i], p = st.cats[c].pct;
+      doc.setLineWidth(sw); doc.setDrawColor(225); doc.circle(dcx, dcy, r, 'S');
+      doc.setDrawColor(greys[i]);
+      if (p >= 100) { doc.circle(dcx, dcy, r, 'S'); }
+      else if (p > 0) {
+        var steps = Math.max(2, Math.round(p * 1.2)), pts = [], segs = [], j, a;
+        for (j = 0; j <= steps; j++) {
+          a = -Math.PI / 2 + (2 * Math.PI * p / 100) * j / steps;
+          pts.push([dcx + r * Math.cos(a), dcy + r * Math.sin(a)]);
+        }
+        for (j = 1; j < pts.length; j++) segs.push([pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]]);
+        doc.lines(segs, pts[0][0], pts[0][1], [1, 1], 'S', false);
+      }
+    });
+    doc.setLineWidth(0.3);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(0);
+    doc.text(st.pct + '%', dcx, dcy + 1.8, { align: 'center' });
+    CATS.forEach(function (c, i) {
+      var ly = dcy - 8 + i * 9, x = st.cats[c];
+      doc.setFillColor(greys[i]); doc.rect(M + 56, ly - 3.2, 4, 4, 'F');
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(0);
+      doc.text(TABS[c], M + 63, ly);
+      doc.text(x.pct + '%  ·  ' + x.n + (x.n === 1 ? ' disciplina' : ' disciplinas'), R, ly, { align: 'right' });
+    });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(110);
+    doc.text('Anéis, de fora para dentro: ENEM, Concursos, Faculdade. Percentual de disciplinas concluídas.', M + 56, dcy + 17);
+    doc.setTextColor(0);
+    y = dcy + 30;
+    if (!act.length) {
+      ensure(10);
+      doc.setTextColor(90); txt('Nenhuma disciplina marcada para esta semana.', M, 10.5, false); doc.setTextColor(0); y += 10;
+    }
+
     /* Por categoria */
-    var cX = { name: M, days: M + 58, time: M + 100, topic: M + 128 };
+    var cX = { name: M, days: M + 58, time: M + 100, desc: M + 128 };
     var LH = 4.6;
     CATS.forEach(function (c) {
       var rows = act.filter(function (x) { return x.cat === c; }).map(function (x) { return x.d; });
@@ -613,20 +909,20 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
       txt(rows.length + (rows.length === 1 ? ' disciplina' : ' disciplinas') + ' · ' + hm(cm), R, 10, false, 'right');
       y += 3; rule(0.8); y += 6;
       doc.setTextColor(90);
-      txt('Disciplina', cX.name, 8.5, false); txt('Dias', cX.days, 8.5, false); txt('Horário', cX.time, 8.5, false); txt('Assunto', cX.topic, 8.5, false);
+      txt('Disciplina', cX.name, 8.5, false); txt('Dias', cX.days, 8.5, false); txt('Horário', cX.time, 8.5, false); txt('Descrição', cX.desc, 8.5, false);
       doc.setTextColor(0); y += 2; rule(0.2); y += 5.5;
       rows.forEach(function (d) {
         doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5);
-        var n = doc.splitTextToSize(d.name + (d.done >= d.goal ? ' (concluída)' : ''), 54);
-        var dy = doc.splitTextToSize(daysTxt(d.days), 38);
+        var n = doc.splitTextToSize(d.name + (d.fin ? ' (concluída)' : ''), 54);
+        var dy = doc.splitTextToSize(daysTxt(d.days) || '-', 38);
         var tm = d.start && d.end ? [d.start + ' - ' + d.end] : [d.start || '-'];
-        var tp = doc.splitTextToSize(d.topic || '-', R - cX.topic);
+        var tp = doc.splitTextToSize(d.desc || '-', R - cX.desc);
         var lines = Math.max(n.length, dy.length, tm.length, tp.length);
         ensure(lines * LH + 5);
         doc.setTextColor(0);
         doc.setFont('helvetica', 'bold'); doc.text(n, cX.name, y);
         doc.setFont('helvetica', 'normal');
-        doc.text(dy, cX.days, y); doc.text(tm, cX.time, y); doc.text(tp, cX.topic, y);
+        doc.text(dy, cX.days, y); doc.text(tm, cX.time, y); doc.text(tp, cX.desc, y);
         y += lines * LH - 1; y += 2.5;
         doc.setDrawColor(190); doc.setLineWidth(0.2); doc.line(M, y, R, y); y += 5.5;
       });
@@ -669,31 +965,144 @@ input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; border-
     return doc;
   }
 
-  function download(buf, filename) {
-    var url = URL.createObjectURL(new Blob([buf], { type: 'application/pdf' }));
-    var a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  /* PDF do relatório: o que foi estudado (blocos de foco concluídos) no período */
+  function buildReportPdf(JsPDF, SS, from, to) {
+    var doc = new JsPDF({ unit: 'mm', format: 'a4' });
+    var M = 18, W = 210, PH = 297, y = M, R = W - M, DAYMS = 86400000;
+    var CAT = { enem: 'ENEM', concursos: 'Concursos', faculdade: 'Faculdade', livre: 'Cronômetro livre' };
+    var WD = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+    function hmm(min) { var h = Math.floor(min / 60), m = Math.round(min % 60); return h ? h + 'h ' + pad(m) + 'min' : m + 'min'; }
+    function ensure(h) { if (y + h > PH - 20) { doc.addPage(); y = M; } }
+    function txt(s, x, size, bold, align) {
+      doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(size);
+      if (align) doc.text(String(s), x, y, { align: align }); else doc.text(String(s), x, y);
+    }
+    function rule(w) { doc.setDrawColor(0); doc.setLineWidth(w || 0.3); doc.line(M, y, R, y); }
+
+    var entries = (SS.log || []).filter(function (e) { return e.t >= from && e.t <= to; });
+    var blocks = entries.filter(function (e) { return e.k === 'b'; });
+    var done = entries.filter(function (e) { return e.k === 'c'; });
+    var totalMin = 0;
+    blocks.forEach(function (e) { totalMin += e.min; });
+
+    doc.setTextColor(0);
+    txt('RELATÓRIO SEMANAL DE ESTUDOS', M, 18, true); y += 8;
+    doc.setTextColor(90); txt('Período: ' + fmtD(from) + ' a ' + fmtD(to), M, 11, false); doc.setTextColor(0);
+    y += 5; rule(0.8); y += 10;
+
+    var daysWith = {};
+    blocks.forEach(function (e) { daysWith[new Date(e.t).toDateString()] = 1; });
+    var items = [['Tempo total', hmm(totalMin)], ['Blocos de foco', String(blocks.length)], ['Dias com estudo', String(Object.keys(daysWith).length)]];
+    var bw = (R - M - 12) / 3;
+    items.forEach(function (it, i) {
+      var x = M + i * (bw + 6);
+      doc.setDrawColor(0); doc.setLineWidth(0.5); doc.rect(x, y, bw, 22);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(90); doc.text(it[0].toUpperCase(), x + 4, y + 7);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor(0); doc.text(it[1], x + 4, y + 17);
+    });
+    y += 34;
+
+    txt('ESTUDO POR DIA', M, 10, true); y += 3; rule(0.3); y += 7;
+    var d0 = new Date(from); d0.setHours(0, 0, 0, 0);
+    var nDays = Math.min(31, Math.max(7, Math.ceil((to - d0.getTime()) / DAYMS)));
+    var perDay = [], maxD = 0;
+    for (var i = 0; i < nDays; i++) {
+      var dd = new Date(d0.getTime()); dd.setDate(dd.getDate() + i);
+      var s = dd.getTime(), e2 = addDays(s, 1), mm = 0;
+      blocks.forEach(function (e) { if (e.t >= s && e.t < e2) mm += e.min; });
+      perDay.push({ label: WD[dd.getDay()] + ' ' + pad(dd.getDate()) + '/' + pad(dd.getMonth() + 1), min: mm });
+      if (mm > maxD) maxD = mm;
+    }
+    var barX = M + 30, barMax = R - barX - 30;
+    perDay.forEach(function (p) {
+      ensure(8);
+      doc.setTextColor(0); txt(p.label, M, 10, false);
+      doc.setDrawColor(0); doc.setLineWidth(0.3); doc.rect(barX, y - 3.6, barMax, 4.6);
+      if (p.min > 0 && maxD > 0) { doc.setFillColor(0); doc.rect(barX, y - 3.6, Math.max(0.8, barMax * p.min / maxD), 4.6, 'F'); }
+      txt(p.min ? hmm(p.min) : '-', R, 10, false, 'right');
+      y += 8;
+    });
+    y += 6;
+
+    ['enem', 'concursos', 'faculdade', 'livre'].forEach(function (tab) {
+      var rows = {}, tmin = 0, tb = 0;
+      blocks.forEach(function (e) {
+        if (e.tab !== tab) return;
+        var r = rows[e.name] || (rows[e.name] = { name: e.name, b: 0, m: 0 });
+        r.b++; r.m += e.min; tmin += e.min; tb++;
+      });
+      var list = Object.keys(rows).map(function (k) { return rows[k]; }).sort(function (a, b) { return b.m - a.m; });
+      if (!list.length) return;
+      ensure(30);
+      doc.setTextColor(0);
+      txt(CAT[tab].toUpperCase(), M, 11, true); txt(hmm(tmin) + ' em ' + tb + (tb === 1 ? ' bloco' : ' blocos'), R, 10, false, 'right');
+      y += 3; rule(0.8); y += 6;
+      doc.setTextColor(90);
+      txt('Disciplina', M, 8.5, false); txt('Blocos', R - 62, 8.5, false, 'right'); txt('Tempo', R - 32, 8.5, false, 'right'); txt('Situação', R, 8.5, false, 'right');
+      doc.setTextColor(0); y += 2; rule(0.2); y += 6;
+      list.forEach(function (r) {
+        ensure(9);
+        var goalTxt = '-', arr = (SS.data && SS.data[tab]) || [];
+        for (var k = 0; k < arr.length; k++) if (arr[k].name === r.name) goalTxt = arr[k].fin ? 'Concluída' : 'Em andamento';
+        txt(doc.splitTextToSize(r.name, 90)[0], M, 10.5, false);
+        txt(r.b, R - 62, 10.5, false, 'right'); txt(hmm(r.m), R - 32, 10.5, false, 'right'); txt(goalTxt, R, 10.5, false, 'right');
+        y += 2.5; doc.setDrawColor(190); doc.setLineWidth(0.2); doc.line(M, y, R, y); y += 5.5;
+      });
+      y += 6;
+    });
+
+    if (done.length) {
+      ensure(24);
+      txt('DISCIPLINAS CONCLUÍDAS', M, 11, true); y += 3; rule(0.8); y += 7;
+      done.forEach(function (e) {
+        ensure(8);
+        txt('- ' + doc.splitTextToSize(e.name, 100)[0] + '  (' + (CAT[e.tab] || '') + ', ' + fmtD(e.t) + ')', M, 10.5, false);
+        y += 6.5;
+      });
+      y += 6;
+    }
+    if (!blocks.length && !done.length) { ensure(10); txt('Nenhum bloco de estudo foi registrado neste período.', M, 11, false); y += 10; }
+
+    var n = doc.getNumberOfPages();
+    for (var p = 1; p <= n; p++) {
+      doc.setPage(p); doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(110);
+      doc.text('Contam apenas blocos de foco concluídos no cronômetro. Gerado em ' + fmtD(Date.now()) + '.', M, PH - 10);
+      doc.text(p + ' / ' + n, R, PH - 10, { align: 'right' });
+    }
+    return doc;
   }
 
-  $('w-pdf').addEventListener('click', function () {
+  function jspdf() {
     var J = window.jspdf && window.jspdf.jsPDF;
-    if (!J) { wmsg('Não foi possível carregar o gerador de PDF. Verifique a conexão e recarregue a página.'); return; }
+    if (!J) rmsg('Não foi possível carregar o gerador de PDF. Verifique a conexão e recarregue a página.');
+    return J;
+  }
+  $('b-cron').addEventListener('click', function () {
+    var J = jspdf(); if (!J) return;
     try {
-      var buf = buildPdf(J, WS).output('arraybuffer');
-      download(buf, 'cronograma-semanal-' + ymd(WS) + '.pdf');
-      wmsg('PDF gerado. Confira seus downloads.');
-    } catch (e) { wmsg('Erro ao montar o PDF. Tente de novo.'); }
+      download(buildCronPdf(J, S.weekStart).output('arraybuffer'), 'cronograma-semanal-' + ymd(S.weekStart) + '.pdf');
+      rmsg('PDF do cronograma gerado. Confira seus downloads.');
+    } catch (e) { rmsg('Erro ao montar o PDF do cronograma. Tente de novo.'); }
+  });
+  $('b-rel').addEventListener('click', function () {
+    var J = jspdf(); if (!J) return;
+    var now = Date.now();
+    try {
+      download(buildReportPdf(J, { log: S.log, data: S.data }, S.weekStart, now).output('arraybuffer'), 'relatorio-semanal-' + ymd(S.weekStart) + '-a-' + ymd(now) + '.pdf');
+      rmsg('PDF do relatório gerado. A semana não é reiniciada: isso acontece sozinho no domingo.');
+    } catch (e) { rmsg('Erro ao montar o PDF do relatório. Tente de novo.'); }
+  });
+  $('r-prev').addEventListener('click', function () {
+    var J = jspdf(); if (!J || !S.prev) return;
+    try {
+      var from = S.prev.start, to = addDays(from, 7) - 1;
+      download(buildReportPdf(J, { log: S.prev.log, data: {} }, from, to).output('arraybuffer'), 'relatorio-semana-passada-' + ymd(from) + '.pdf');
+      rmsg('PDF do relatório da semana passada gerado.');
+    } catch (e) { rmsg('Erro ao montar o PDF. Tente de novo.'); }
   });
 
-  /* Ao voltar do Foco, relê os dados compartilhados */
-  function reloadState() { S = loadState(); drawTabs(); render(); }
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) reloadState(); });
-  window.addEventListener('pageshow', function (e) { if (e.persisted) reloadState(); });
-
-  drawTabs();
   drawChips();
+  drawTabs();
   render();
 })();
 </script>
